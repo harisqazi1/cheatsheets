@@ -1,0 +1,87 @@
+---
+syntax: bash
+tags: [ general, security, privacy ]
+---
+
+// Update and Upgrade the system and update Flatpaks, as well:
+sudo apt update && sudo apt upgrade -y && flatpak update -y
+
+// Add a user while skipping the GECOS field (helps with automation scripts)
+sudo useradd -m -c "Username" username
+
+// Shred drive to prevent data leaking (Verbose; Final overwrite with 0s; 3 iterations; random bytes from /dev/urandom):
+sudo shred -vzn 3 --random-source=/dev/urandom /dev/device
+
+# ShredOS for Live OS based wipe
+
+// Using hdparm to secure erase:
+hdparm -I /dev/device # To check if drive is frozen or not
+hdparm --user-master u --security-set-pass password_here /dev/device #Set user and password
+# Enhanced Security Erase Supported:
+hdparm --user-master u --security-erase-enhanced password_here /dev/device
+# Enhanced Security Erase NOT Supported:
+hdparm --user-master u --security-erase password_here /dev/device
+# Check to make sure disk is wiped
+dd if=/dev/sda bs=1M count=5
+
+// Podman for Debian
+podman pull docker.io/debian #Pull from Docker Repo
+podman run --name test_debian -dt debian:latest #detached mode and tty allocated
+podman ps -a #Check for podman processes
+podman exec -it test_debian /bin/bash #Shell on test_debian
+podman stop test_debian
+podman start test_debian
+podman container rm test_debian
+podman rmi -a #Remove all images
+podman prune -a #Remove all unused images
+
+// Creating encrypted containers with LUKS
+dd if=/dev/urandom of=/path-to-file bs=1M count=1024 status=progress
+sudo cryptsetup luksFormat /path-to-file
+// Opening containers
+udisksctl loop-setup -f /path-to-file
+udisksctl unlock -b /dev/loop0
+// Backing up LUKS header
+cryptsetup luksHeaderBackup /dev/device --header-backup-file /mnt/backup/file.img
+
+// Tomb
+# 100MB tomb called secret
+tomb dig -s 100 secret.tomb
+tomb forge secret.tomb.key
+tomb lock secret.tomb -k secret.tomb.key
+# Open tomb
+tomb open secret.tomb -k secret.tomb.key
+# Close
+tomb close
+# Close All
+tomb slam all
+# Resize by 10MB
+tomb resize -s 10
+
+
+// Unmount and Power Off Disk
+udisksctl unmount -b /dev/device
+udiskctl power-off -b /dev/device
+
+//Zip files into its own archive
+for file in *; do zip ${file%.*}.zip $file; done
+
+// Split a CSV while maintaining the header into 3 files
+mlr --csv split -m 3 file1.csv
+
+// OpenPGP future defaults for generating key; batch to bypass random movement requirement
+#gpg --quick-gen-key --batch user@localhost.com future-default
+
+
+// LUKS Encryption
+lsblk #find drive
+sudo dd if=/dev/zero of=/dev/device count=4096 #clear drive
+sudo cryptsetup luksFormat /dev/device #encrypt drive for LUKS (no options)
+cryptsetup -c aes-xts-plain64 --key-size 512 --hash sha512 --time 5000 --use-urandom /dev/sdb1 #encrypt drive for LUKS (options)
+cryptsetup open /dev/device vaultdrive #open drive
+ls /dev/mapper #locate volumes
+cryptsetup close vaultdrive #close volume
+sudo mkfs.ext4 -f -L myvault /dev/mapper/vaultdrive #Create ext4 filesystem
+sudo cryptsetup open /dev/device vaultdrive #open drive after filesystem creation
+sudo mount /dev/mapper/vaultdrive /mnt/mounted_drive #mount to a folder in /mnt/
+

@@ -44,6 +44,19 @@ udisksctl unlock -b /dev/loop0
 // Backing up LUKS header
 cryptsetup luksHeaderBackup /dev/device --header-backup-file /mnt/backup/file.img
 
+// Creating LUKS encrypted external drive
+sudo cryptsetup luksFormat --type luks2 /dev/device
+sudo cryptsetup luksOpen /dev/device backupDrive
+sudo cryptsetup -v status backupDrive #Info on drive
+sudo mkfs -t ext4 -V /dev/mapper/backupDrive #Filesystem creation
+sudo mount /dev/mapper/backupDrive /mnt/backupDrive #Mount Drive
+// Mounting
+sudo cryptsetup luksOpen /dev/device backupDrive
+sudo mount /dev/mapper/backupDrive /mnt/backupDrive
+// Unmounting
+sudo umount /mnt/backupDrive
+sudo cryptsetup luksClose backupDrive
+
 // Tomb
 # 100MB tomb called secret
 tomb dig -s 100 secret.tomb
@@ -67,21 +80,7 @@ udiskctl power-off -b /dev/device
 for file in *; do zip ${file%.*}.zip $file; done
 
 // Split a CSV while maintaining the header into 3 files
-mlr --csv split -m 3 file1.csv
+mlr --csv split -m 3 file.csv
 
 // OpenPGP future defaults for generating key; batch to bypass random movement requirement
 #gpg --quick-gen-key --batch user@localhost.com future-default
-
-
-// LUKS Encryption
-lsblk #find drive
-sudo dd if=/dev/zero of=/dev/device count=4096 #clear drive
-sudo cryptsetup luksFormat /dev/device #encrypt drive for LUKS (no options)
-cryptsetup -c aes-xts-plain64 --key-size 512 --hash sha512 --time 5000 --use-urandom /dev/sdb1 #encrypt drive for LUKS (options)
-cryptsetup open /dev/device vaultdrive #open drive
-ls /dev/mapper #locate volumes
-cryptsetup close vaultdrive #close volume
-sudo mkfs.ext4 -f -L myvault /dev/mapper/vaultdrive #Create ext4 filesystem
-sudo cryptsetup open /dev/device vaultdrive #open drive after filesystem creation
-sudo mount /dev/mapper/vaultdrive /mnt/mounted_drive #mount to a folder in /mnt/
-

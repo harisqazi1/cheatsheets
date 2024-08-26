@@ -4,31 +4,31 @@ tags: [ KVM, kvm, virtualization ]
 ---
 # Information obtained from Mastering Linux Admin - Second Edition by Alexandru Calcatinge and Julian Balog 
 // Install necessary dependencies:
-sudo apt install qemu-kvm libvirt-clients libvirt-daemon-system bridge-utils virtinst libvirt-daemon virt-manager
+apt install qemu-kvm libvirt-clients libvirt-daemon-system bridge-utils virtinst libvirt-daemon virt-manager
 
 // Start the libvert daemon:
-sudo systemctl start libvirtd
+systemctl start libvirtd
 
 // Enable the libvert daemon (so it starts on boot):
-sudo systemctl enable libvirtd
+systemctl enable libvirtd
 
 // Stop the libvert daemon:
-sudo systemctl stop libvirtd
+systemctl stop libvirtd
 
 // Disable the libvert daemon (so it does not start on boot):
-sudo systemctl disable libvirtd
+systemctl disable libvirtd
 
 // Validate that the host is configured to run libvirt hypervisor drivers:
-sudo virt-host-validate
+virt-host-validate
 
 // View default bridge:
-sudo virsh net-list
+virsh net-list
 
 // Start the default bridge:
-sudo virsh net-start default
+virsh net-start default
 
 // Enable automatic start:
-sudo virsh net-autostart default
+virsh net-autostart default
 
 # Download ISO files to `/var/lib/libvirt/images/`
 
@@ -39,28 +39,28 @@ virt-install --os-variant list
 virt-install --virt-type=kvm --name [VM name] --vcpus=2 --memory=2048 --os-variant=[os_variant] --cdrom=/var/lib/libvirt/images/[image].iso --network=default --disk size=20
 
 // Force stop a VM:
-sudo virsh destroy [VM name]
+virsh destroy [VM name]
 
 // Start a VM:
-sudo virsh start [VM name]
+virsh start [VM name]
 
 // Reboot a VM:
-sudo virsh reboot [VM name]
+virsh reboot [VM name]
 
 // Pause / Suspend a VM:
-sudo virsh suspend [VM name]
+virsh suspend [VM name]
 
 // Resume a paused / suspended VM:
-sudo virsh resume [VM name]
+virsh resume [VM name]
 
 // Completely delete a VM:
-sudo virsh undefine [VM name]
+virsh undefine [VM name]
 
 // List existing VMs:
-sudo virsh list --all
+virsh list --all
 
 // Find IP and MAC Address associated with a VM:
-sudo virsh domifaddr [VM name]
+virsh domifaddr [VM name]
 
 // Connect to VM:
 virt-viewer --connect qemu:///system [VM name]
@@ -68,32 +68,32 @@ virt-viewer --connect qemu:///system [VM name]
 # Cloning
 
 // Shutdown the VM to begin cloning:
-sudo virsh shutdown [VM name]
+virsh shutdown [VM name]
 
 // Clone a VM:
-sudo virt-clone --original [VM name] --name [VM clone name] --auto-clone
+virt-clone --original [VM name] --name [VM clone name] --auto-clone
 # WARNING: This will also clone MAC and IP Address
 
 # Creating templates for cloning
 
 // Install tools for accessing and modifying virtual machine (VM) disk images:
-sudo apt install libguestfs-tools
+apt install libguestfs-tools
 
 // Install the OS with 2vCPU, 2GB RAM, and 20 GB Disk Space:
-sudo virt-install --virt-type=kvm --name [VM name]-template --vcpus=2 --memory=2048 --os-variant=[os_variant] --cdrom=/var/lib/libvirt/images/[image].iso --network=default --disk size=20 –noautoconsole
+virt-install --virt-type=kvm --name [VM name]-template --vcpus=2 --memory=2048 --os-variant=[os_variant] --cdrom=/var/lib/libvirt/images/[image].iso --network=default --disk size=20 –noautoconsole
 
 // Backup file (as a precaution) before creating template:
-sudo cp /var/lib/libvirt/images/[VM name]-template.qcow2 /var/lib/libvirt/images/[VM name]-back-template.qcow2
+cp /var/lib/libvirt/images/[VM name]-template.qcow2 /var/lib/libvirt/images/[VM name]-back-template.qcow2
 
 // Create Template:
-sudo virt-sysprep -d [VM name]-template
+virt-sysprep -d [VM name]-template
 
 # Managing Resources
 
 // vCPU Management:
-sudo virsh setvcpus --domain [VM name] --maximum 1 --config
-sudo virsh setvcpus --domain [VM name] --count 1 --config
+virsh setvcpus --domain [VM name] --maximum 1 --config
+virsh setvcpus --domain [VM name] --count 1 --config
 
 // RAM Management:
-sudo virsh setmaxmem [VM name] 1G --config
-sudo virsh setmem [VM name] 1G --config
+virsh setmaxmem [VM name] 1G --config
+virsh setmem [VM name] 1G --config

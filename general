@@ -7,7 +7,10 @@ tags: [ general, security, privacy ]
 sudo apt update && sudo apt upgrade -y && flatpak update -y
 
 // Add a user while skipping the GECOS field (helps with automation scripts)
-sudo useradd -m -c "Username" username
+sudo useradd -m -c "Username" -d /home/username -s /bin/bash username
+# Change permissions so only owner can access their files
+cd /home
+sudo chmod 700 *
 
 // Shred drive to prevent data leaking (Verbose; Final overwrite with 0s; 3 iterations; random bytes from /dev/urandom):
 sudo shred -vzn 3 --random-source=/dev/urandom /dev/device

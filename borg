@@ -1,0 +1,33 @@
+---
+syntax: bash
+tags: [ backup ]
+---
+# Initialize Repo
+borg init --encryption=repokey /path/to/repo
+
+# Export key file to have backup and/or to remove before uploading Borg repo to cloud
+borg key export borg_backup > encrypted-key-backup.txt
+
+# Create backup with verbose output with the filter (regular file added, regular file modified, regular file with error), list all the files as they are processed, list statistics at the end, cache by time and size, show the return code, compress with lz4, exclude borg caches
+borg create --verbose --filter AME --list --stats --files-cache=mtime,size --show-rc --compression=lz4 --exclude-caches /home/user/Downloads/borg_backup::Cloud ~/Documents
+
+# List archives in a repo
+borg list /path/to/repo
+
+# List contents of an archive
+borg list /path/to/repo::Cloud
+
+# Restore archive by extracting files to current directory
+borg extract /path/to/repo::Cloud
+
+# Do a dry run for extraction to test the data; Does the following reading metadata and data chunks from the repo, checking the hash/hmac, decrypting, decompressing
+borg extract --dry-run borg_backup::Cloud
+
+# Restore a single directory
+borg extract /path/to/repo::Cloud home/user/src
+
+# Delete an archive
+borg delete /path/to/repo::Cloud
+
+# Recover disk space by compacting the segment files
+borg compact /path/to/repo
